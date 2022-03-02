@@ -45,12 +45,12 @@ public class PlayerController : StateMachine
     // Virtual camera para el efecto de Shake
     [SerializeField]
     private CinemachineVirtualCamera machineCamera;
+    [HideInInspector]
+    public BoxCollider2D boxCollider;
 
     [Header("Debug")]
     [HideInInspector]
     public FSMDebugger fSMDebugger;
-    [HideInInspector]
-    public BoxCollider2D boxCollider;
     [SerializeField]
     private GameObject jumpFX;
 
@@ -79,9 +79,9 @@ public class PlayerController : StateMachine
         // esta misma clase como parametro
         SetState(new IddleState(this));
         inicialGravity = rBody.gravityScale;
+        boxCollider = gameObject.GetComponent<BoxCollider2D>();
         // Opciones de Debug
         fSMDebugger = gameObject.GetComponent<FSMDebugger>();
-        boxCollider = gameObject.GetComponent<BoxCollider2D>();
     }
 
     // En Update se gestionan los aspectos mas relacionados al input
@@ -101,31 +101,15 @@ public class PlayerController : StateMachine
         if (GameplayManager.Instance.CinematicPause)
             return;
         actualState.DoState();
-        JumpCorrection();
     }
 
     #region Jump
-    // Se encarga de corregir las esquinas en los saltos
-    private void JumpCorrection()
-    {
-        RaycastHit2D leftRaycast =
-            Physics2D.Raycast(transform.position + new Vector3(-0.275f, 0.275f), Vector2.up, 0.3f, Utility.groundLayer);
-        RaycastHit2D rightRaycast =
-            Physics2D.Raycast(transform.position + new Vector3(0.275f, 0.275f), Vector2.up, 0.3f, Utility.groundLayer);
 
-        // Si esta tocando el  raycast de la izquierda pero no derecha
-        if (leftRaycast && !rightRaycast)
-        {
-            transform.position += new Vector3(0.15f, 0);
-        }
-        // Si esta tocando el  raycast de la derecha pero no izquierda
-        else if (!leftRaycast && rightRaycast)
-        {
-            transform.position -= new Vector3(0.15f, 0);
-        }
-    }
-
-    // Comprueba si esta tocando el suelo y que esta tocando
+    /// <summary>
+    /// Comprueba si esta sobre algo
+    /// </summary>
+    /// <param name="lookForEnemy"></param>
+    /// <returns></returns>
     public GameObject InGround()
     {
         // Comprueba que no este saltando en el momento
@@ -134,16 +118,16 @@ public class PlayerController : StateMachine
             // Castea un cuadrado a los pies del pj para saber si toco algo
             RaycastHit2D hit;
             // Primero comprueba si choco con un enemigo
-            hit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0f, Vector2.down, 0.6f, Utility.enemyLayer);
+            hit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size + new Vector3(0.1f, 0), 0f, Vector2.down, 0.65f, Utility.enemyLayer);
             if (hit)
             {
                 return hit.collider.gameObject;
             }
             // Luego el suelo que tiene un boxcast mas chico para evitar problemas con paredes y el terreno en general
-            hit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size - new Vector3(0.08f, 0), 0f, Vector2.down, 0.3f, Utility.groundLayer);
+            hit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size - new Vector3(0.1f, 0), 0f, Vector2.down, 0.3f, Utility.groundLayer);
             if (hit)
             {
-                return hit.collider.gameObject; 
+                return hit.collider.gameObject;
             }
             return null;
         }
@@ -160,7 +144,7 @@ public class PlayerController : StateMachine
             // Añade la accion a la lista
             jumpBuffer += 1;
             // Remueve del buffer cada cierto tiempo para no estar saltando constantemente
-            Invoke("undoJump", 0.65f);
+            Invoke("undoJump", 0.2f);
         }
 
         // Si esta en el suelo o en el tiempo permitido para saltar

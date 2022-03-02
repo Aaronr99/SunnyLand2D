@@ -168,43 +168,40 @@ public class GameplayManager : MonoBehaviour
     {
         isLeverUp = true;
         SetKeyUI();
-        // Se establece un booleano para pausar solo al jugador
-        cinematicPause = true;
         // Se guarda todo en player prefs
         PlayerPrefs.SetFloat("CheckpointX", pPos.x);
         PlayerPrefs.SetFloat("CheckpointY", pPos.y);
         PlayerPrefs.SetInt("Lifes", playerLife);
         PlayerPrefs.Save();
+        // Se establece un booleano para pausar solo al jugador
+        cinematicPause = true;
         // Se invoca una serie de animaciones con las camaras virtuales 
         // de CineMachine
-        Invoke("CamAnim1", 0.3f);
-
+        StartCoroutine(CamAnimation());
     }
 
-    private void CamAnim1()
+    private IEnumerator CamAnimation()
     {
+        yield return new WaitForSeconds(0.3f);
         // Activa el efecto de brillo de la casa
         glowFX.SetActive(true);
         cm1.gameObject.SetActive(false);
         cm2.gameObject.SetActive(true);
-        Invoke("CamAnim2", 3.5f);
+        cm3.gameObject.SetActive(false);
+        yield return new WaitForSeconds(3f);
 
-    }
-    private void CamAnim2()
-    {
         // Se iguala la posicion de la camara 3 y la camara 1
         cm3.transform.position = cm1.transform.position;
         cm1.gameObject.SetActive(false);
         cm2.gameObject.SetActive(false);
         cm3.gameObject.SetActive(true);
-        Invoke("CamAnim3", 2.5f);
-    }
-    private void CamAnim3()
-    {
+        yield return new WaitForSeconds(2f);
+
         cm1.gameObject.SetActive(true);
         cm2.gameObject.SetActive(false);
         cm3.gameObject.SetActive(false);
-        Invoke("ReturnControl", 0.5f);
+        yield return new WaitForSeconds(0.5f);
+        ReturnControl();
     }
 
     // Se devuelve el control al jugador para que puede seguir

@@ -25,15 +25,33 @@ public class Enemy2 : Enemy
         {
             direction *= -1;
         }
+
+        #region Animation
+        // Si comenzo a caer
+        if (rBody.velocity.y < 0.35f)
+        {           
+            anim.SetBool("jump", false);
+        }
+        ray = Physics2D.Raycast(transform.position, Vector2.down, 0.75f, Utility.groundLayer);
+        // Si esta a punto de tocar el suelo
+        if (ray)
+        {
+            anim.SetBool("land", true);
+        }
+        else
+        {
+            anim.SetBool("land", false);
+        }
+        #endregion
         timer -= Time.deltaTime;
         // Si se acabo el tiempo de espera
         if (timer <= 0)
         {
             // Rota segun la direccion del salto
             Rotate();
-            anim.SetTrigger("jump");
             // Salta
             rBody.velocity = new Vector2(direction * 1.4f, 2.5f) * jumpForce;
+            anim.SetBool("jump", true);
             // Setear un timer nuevo
             timer = Random.Range(2.5f, 4.5f);
         }
