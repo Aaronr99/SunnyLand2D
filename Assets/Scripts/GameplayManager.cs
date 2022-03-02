@@ -200,7 +200,7 @@ public class GameplayManager : MonoBehaviour
         cm1.gameObject.SetActive(true);
         cm2.gameObject.SetActive(false);
         cm3.gameObject.SetActive(false);
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.2f);
         ReturnControl();
     }
 
